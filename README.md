@@ -60,6 +60,34 @@ All user management endpoints require authentication and admin role authorizatio
 - `PUT /api/users/theme` - Toggle user's dark theme preference (authenticated user)
 - Body: `{ darkTheme: boolean }`
 
+## Project CRUD Operations
+
+**Get All Projects**
+- `GET /api/projects` - Retrieve all projects with member details (authenticated users)
+
+**Get Project by ID**
+- `GET /api/projects/:id` - Get specific project with populated members (authenticated users)
+
+**Create Project**
+- `POST /api/projects` - Create new project (managers and admins only)
+- Body: `{ name, description, members: [teamMemberIds] }`
+
+**Update Project**
+- `PUT /api/projects/:id` - Update project information (managers and admins only)
+- Body: `{ name, description, members }`
+
+**Delete Project**
+- `DELETE /api/projects/:id` - Delete project permanently (admins only)
+
+**Task Management within Projects**
+- `POST /api/projects/:id/tasks` - Add task to project
+  - Body: `{ status: "todo|in-progress|done", task: { title, description, order } }`
+- `PUT /api/projects/:id/tasks` - Update existing task
+  - Body: `{ status, taskId, task: { title, description, order } }`
+- `PUT /api/projects/:id/tasks/move` - Move task between status columns
+  - Body: `{ fromStatus, toStatus, taskId, newOrder }`
+- `DELETE /api/projects/:id/tasks/:taskId?status=todo` - Delete task from project
+
 ## Setup
 1. Copy `.env.example` to `.env` and fill in your values.
 2. Install dependencies:

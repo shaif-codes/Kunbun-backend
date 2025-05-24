@@ -9,7 +9,7 @@ const router = Router();
 
 router.get("/", authenticate, authorizeRole(roleEnums.ADMIN), userController.getAllUsers);
 
-router.get("/:id", authenticate, authorizeRole(roleEnums.ADMIN), userController.getUserById);
+router.get("/:id", authenticate, authorizeRole(roleEnums.ADMIN), validator({ params: userSchema.getUserById }),  userController.getUserById);
 
 router.put(
   "/:id",
@@ -23,6 +23,7 @@ router.delete(
   "/:id",
   authenticate,
   authorizeRole(roleEnums.ADMIN),
+  validator({ params: userSchema.deleteUser }),
   userController.deleteUser
 );
 

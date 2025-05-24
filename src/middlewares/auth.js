@@ -23,7 +23,7 @@ export const authenticate = async (req, res, next) => {
     if (!user) {
       return invalidCred(res)("User not found");
     }
-    console.log("Authenticated user:", user);
+
     req.user = user;
     next();
   } catch (error) {
@@ -40,7 +40,6 @@ export const authenticate = async (req, res, next) => {
 
 // Middleware to authorize user based on role
 export const authorizeRole = (...roles) => {
-  console.log("Authorizing roles:", roles);
   return (req, res, next) => {
     if (!req.user) {
       return invalidCred(res)("User not authenticated");
@@ -50,8 +49,7 @@ export const authorizeRole = (...roles) => {
     if (!roles.includes(req.user.role)) {
       return roleNotAuthorized(res);
     }
-    
-    console.log("User authorized with role:", req.user.role);
+
     next();
   };
 };
