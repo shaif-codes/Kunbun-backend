@@ -26,18 +26,6 @@ export const userController = {
             return errorResponse(res, error, "Internal server error");
         }
     },
-
-    async createUser(req, res) {
-        try {
-            const { email, name, password, role, teamId } = req.body;
-            const newUser = new userModel({ email, name, password, role, teamId });
-            await newUser.save();
-            return successResponse(res, newUser, 201);
-        } catch (error) {
-            return errorResponse(res, error, "Internal server error");
-        }
-    },
-
     async updateUser(req, res) {
         try {
             const { email, name, password, role } = req.body;

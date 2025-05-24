@@ -1,7 +1,7 @@
 // auth with firebase
 import { userModel } from "../models/index.js";
-import { successResponse } from "../utils/response.js";
-import { notFound } from "../utils/error.js";
+import { successResponse, errorResponse } from "../utils/response.js";
+import { notFound, invalidCred } from "../utils/error.js";
 import { firebaseService } from "../services/firebaseService.js";
 import jwt from "jsonwebtoken";
 
@@ -21,7 +21,7 @@ export const authController = {
       const user = await userModel.create({
         firebaseUid: firebaseUser.uid,
         email: firebaseUser.email,
-        name: name,
+        name: name
       });
 
       return successResponse(res, user, "User created successfully");
@@ -64,10 +64,7 @@ export const authController = {
       return successResponse(res, { token }, "User logged in successfully");
     } catch (error) {
       console.error("Error logging in Firebase user:", error);
-      return res.status(401).json({
-        message: "Invalid credentials",
-        error: error.message,
-      });
+      return invalidCred(res);
     }
   },
   firebaseResetPassword: async (req, res) => {
@@ -94,10 +91,7 @@ export const authController = {
       return successResponse(res, null, "Password reset email sent successfully");
     } catch (error) {
       console.error("Error sending password reset email:", error);
-      return res.status(500).json({
-        message: "Failed to send password reset email",
-        error: error.message,
-      });
+      return errorResponse(res, error, "Failed to send password reset email");
     }
   }
 };

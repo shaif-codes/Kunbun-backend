@@ -7,15 +7,6 @@ import { userSchema } from "../schema/index.js";
 
 const router = Router();
 
-// router.post("/login", validator({ body: userSchema.loginUser }), login);
-
-router.post(
-  "/register",
-  authorizeRole(roleEnums.ADMIN),
-  validator({ body: userSchema.createUser }),
-  userController.createUser
-);
-
 router.get("/", authorizeRole(roleEnums.ADMIN), userController.getAllUsers);
 
 router.get("/:id", authorizeRole(roleEnums.ADMIN), userController.getUserById);
