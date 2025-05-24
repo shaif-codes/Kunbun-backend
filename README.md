@@ -39,6 +39,27 @@ We implement Firebase authentication entirely on the backend for better security
 - Centralized authentication control
 - MongoDB stores additional user data
 
+## User CRUD Operations
+
+All user management endpoints require authentication and admin role authorization.
+
+**Get All Users**
+- `GET /api/users` - Retrieve all users (admin only)
+
+**Get User by ID**
+- `GET /api/users/:id` - Get specific user details (admin only)
+
+**Update User**
+- `PUT /api/users/:id` - Update user information (admin only)
+- Body: `{ name, email, role, isActive }`
+
+**Delete User**
+- `DELETE /api/users/:id` - Delete user from both MongoDB and Firebase (admin only)
+
+**Change Theme**
+- `PUT /api/users/theme` - Toggle user's dark theme preference (authenticated user)
+- Body: `{ darkTheme: boolean }`
+
 ## Setup
 1. Copy `.env.example` to `.env` and fill in your values.
 2. Install dependencies:

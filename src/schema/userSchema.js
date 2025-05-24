@@ -12,11 +12,10 @@ export const userSchema = {
     teamId: Joi.string().optional(),
   }),
   updateUser: Joi.object({
-    email: Joi.string().email().optional(),
     name: Joi.string().optional(),
-    password: Joi.string().min(6).optional(),
     role: Joi.string().valid("USER", "ADMIN", "SUPER_ADMIN").optional(),
     teamId: Joi.string().optional(),
+    darkTheme: Joi.boolean().optional(),
   }),
   loginUser: Joi.object({
     email: Joi.string().email().required(),

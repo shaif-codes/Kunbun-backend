@@ -10,31 +10,31 @@ export const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role }, config.jwtSecret);
 };
 
-// Middleware to authenticate JWT token
-const firebaseAuth = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return invalidCred(res)("Authorization header missing or invalid format");
+// Middleware to authenticate user with jwt
+export const authenticate = async (req, res, next) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return invalidCred(res);
   }
 
-  const idToken = authHeader.split(" ")[1];
-
   try {
-    const decodedToken = await admin.auth().verifyIdToken(idToken);
-
-    // Check if the user exists in the database
-    const user = await userModel.findById(
-      { firebaseUid: decodedToken.uid },
-      "-password"
-    );
+    const decoded = jwt.verify(token, config.jwtSecret);
+    const user = await userModel.findById(decoded.id).select("-password");
     if (!user) {
-      return notFound(res)("User");
+      return invalidCred(res)("User not found");
     }
-    req.user = user; // includes uid, email, etc.
+    console.log("Authenticated user:", user);
+    req.user = user;
     next();
   } catch (error) {
-    console.error("Error verifying Firebase ID token:", error);
-    return errorResponse(res, error, "Failed to authenticate user");
+    if (
+      error.name === "JsonWebTokenError" ||
+      error.name === "TokenExpiredError"
+    ) {
+      return invalidCred(res)("Invalid token");
+    }
+    console.error("Error fetching user:", error);
+    return errorResponse(res, error, "Internal server error");
   }
 };
 
@@ -42,14 +42,16 @@ const firebaseAuth = async (req, res, next) => {
 export const authorizeRole = (...roles) => {
   console.log("Authorizing roles:", roles);
   return (req, res, next) => {
-    firebaseAuth(req, res, () => {
-      if (!req.user) {
-        return invalidCred(res)("User not authenticated");
-      }
-    });
+    if (!req.user) {
+      return invalidCred(res)("User not authenticated");
+    }
+    
+    console.log("User role:", req.user.role);
     if (!roles.includes(req.user.role)) {
       return roleNotAuthorized(res);
     }
+    
+    console.log("User authorized with role:", req.user.role);
     next();
   };
 };
