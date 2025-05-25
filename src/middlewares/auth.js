@@ -31,7 +31,7 @@ export const authenticate = async (req, res, next) => {
       error.name === "JsonWebTokenError" ||
       error.name === "TokenExpiredError"
     ) {
-      return invalidCred(res)("Invalid token");
+      return invalidCred(res);
     }
     console.error("Error fetching user:", error);
     return errorResponse(res, error, "Internal server error");

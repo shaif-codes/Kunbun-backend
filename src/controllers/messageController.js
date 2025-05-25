@@ -23,7 +23,7 @@ export const messageController = {
             const skip = (page - 1) * limit;
             const messages = await messageModel.find({ teamId })
                 .populate('senderId', 'name email')
-                .sort({ timestamp: -1 })
+                .sort({ timestamp: 1 })
                 .limit(parseInt(limit))
                 .skip(skip);
 
