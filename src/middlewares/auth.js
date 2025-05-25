@@ -21,7 +21,7 @@ export const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, config.jwtSecret);
     const user = await userModel.findById(decoded.id).select("-password");
     if (!user) {
-      return invalidCred(res)("User not found");
+      return invalidCred(res);
     }
 
     req.user = user;
@@ -42,7 +42,7 @@ export const authenticate = async (req, res, next) => {
 export const authorizeRole = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return invalidCred(res)("User not authenticated");
+      return invalidCred(res);
     }
     
     console.log("User role:", req.user.role);
