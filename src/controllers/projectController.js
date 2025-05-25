@@ -2,6 +2,12 @@ import { projectModel } from '../models/index.js';
 import { successResponse, errorResponse } from '../utils/response.js';
 import { notFound } from '../utils/error.js';
 
+// Socket.IO instance (will be set from server)
+let io;
+export const setSocketIO = (socketInstance) => {
+    io = socketInstance;
+};
+
 export const projectController = {
     // Get all projects
     async getAllProjects(req, res) {
@@ -63,6 +69,19 @@ export const projectController = {
             const savedProject = await newProject.save();
             const populatedProject = await projectModel.findById(savedProject._id)
                 .populate('members', 'name email');
+
+            // Emit real-time event
+            if (io) {
+                io.to(`project_${savedProject._id}`).emit('project_created', {
+                    project: populatedProject,
+                    createdBy: {
+                        id: req.user._id,
+                        name: req.user.name,
+                        email: req.user.email
+                    },
+                    timestamp: new Date().toISOString()
+                });
+            }
 
             return successResponse(res, populatedProject, "Project created successfully", 201);
         } catch (error) {
