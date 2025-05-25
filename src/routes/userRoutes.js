@@ -7,6 +7,11 @@ import { userSchema } from "../schema/index.js";
 
 const router = Router();
 
+router.get('/me',
+  authenticate,
+  userController.getCurrentUser
+);
+
 router.get("/", authenticate, authorizeRole(roleEnums.ADMIN), userController.getAllUsers);
 
 router.get("/:id", authenticate, authorizeRole(roleEnums.ADMIN), validator({ params: userSchema.getUserById }),  userController.getUserById);

@@ -82,5 +82,18 @@ export const userController = {
         } catch (error) {
             return errorResponse(res, error, "Internal server error");
         }
+    },
+    async getCurrentUser(req, res) {
+        try {
+            console.log("hellow I am here")
+            const user = await userModel.findById(req.user._id).select("-password -firebaseUid");
+            if (!user) {
+                return notFound(res)("User");
+            }
+            return successResponse(res, user);
+        } catch (error) {
+            console.error("Error fetching current user:", error);
+            return errorResponse(res, error, "Internal server error");
+        }
     }
 };
