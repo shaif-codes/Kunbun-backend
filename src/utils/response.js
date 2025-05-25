@@ -4,6 +4,7 @@
 
 function successResponse(res, data = {}, message = 'Success', statusCode = 200) {
     return res.status(statusCode).json({
+        status_code: statusCode,
         success: true,
         message,
         data,
@@ -12,6 +13,7 @@ function successResponse(res, data = {}, message = 'Success', statusCode = 200) 
 
 function errorResponse(res, error = {}, message = 'Error', statusCode = 500) {
     return res.status(statusCode).json({
+        status_code: statusCode,
         success: false,
         message,
         error,

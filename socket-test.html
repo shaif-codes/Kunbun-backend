@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kunban Socket.IO Tester</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 600px;
+        }
+
+        .left-panel, .right-panel {
+            padding: 30px;
+        }
+
+        .left-panel {
+            border-right: 1px solid #e0e0e0;
+            background: #f8f9fa;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.disconnect {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        }
+
+        button.secondary {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+        }
+
+        .status {
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .status.connected {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.disconnected {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .logs {
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+
+        .log-entry.info {
+            color: #00ff00;
+        }
+
+        .log-entry.warning {
+            color: #ffaa00;
+        }
+
+        .log-entry.error {
+            color: #ff4444;
+        }
+
+        .log-entry.event {
+            color: #44ffff;
+            background: rgba(68, 255, 255, 0.1);
+        }
+
+        .timestamp {
+            color: #888;
+            font-size: 10px;
+        }
+
+        .message-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .message-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .message-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: #667eea;
+            font-size: 12px;
+        }
+
+        .message-content {
+            margin-top: 3px;
+            color: #333;
+        }
+
+        .message-time {
+            font-size: 10px;
+            color: #888;
+            margin-top: 3px;
+        }
+
+        .typing-indicator {
+            color: #667eea;
+            font-style: italic;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .user-list {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-dot.online {
+            background: #28a745;
+        }
+
+        .status-dot.offline {
+            background: #dc3545;
+        }
+
+        .clear-logs {
+            background: #6c757d;
+            font-size: 12px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+        }
+
+        .task-updates {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .task-update-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #f39c12;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .left-panel {
+                border-right: none;
+                border-bottom: 1px solid #e0e0e0;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Kunban Socket.IO Tester</h1>
+            <p>Real-time collaboration testing interface</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <!-- Connection Section -->
+                <div class="section">
+                    <h3>🔌 Connection</h3>
+                    <div id="connectionStatus" class="status disconnected">Disconnected</div>
+                    <div class="form-group">
+                        <label for="jwtToken">JWT Token:</label>
+                        <input type="text" id="jwtToken" placeholder="Enter your JWT token here">
+                    </div>
+                    <button onclick="connectSocket()">Connect</button>
+                    <button onclick="disconnectSocket()" class="disconnect">Disconnect</button>
+                </div>
+
+                <!-- Room Management -->
+                <div class="section">
+                    <h3>🏠 Room Management</h3>
+                    <div class="form-group">
+                        <label for="projectId">Project ID:</label>
+                        <input type="text" id="projectId" placeholder="Enter project ID">
+                    </div>
+                    <button onclick="joinProject()" class="secondary">Join Project</button>
+                    <button onclick="leaveProject()" class="secondary">Leave Project</button>
+
+                    <div class="form-group">
+                        <label for="teamId">Team ID:</label>
+                        <input type="text" id="teamId" placeholder="Enter team ID">
+                    </div>
+                    <button onclick="joinTeam()" class="secondary">Join Team</button>
+                    <button onclick="leaveTeam()" class="secondary">Leave Team</button>
+                </div>
+
+                <!-- Task Testing -->
+                <div class="section">
+                    <h3>📋 Task Updates</h3>
+                    <div class="form-group">
+                        <label for="taskProjectId">Project ID:</label>
+                        <input type="text" id="taskProjectId" placeholder="Project ID for task">
+                    </div>
+                    <div class="form-group">
+                        <label for="taskAction">Action:</label>
+                        <select id="taskAction">
+                            <option value="created">Task Created</option>
+                            <option value="updated">Task Updated</option>
+                            <option value="moved">Task Moved</option>
+                            <option value="deleted">Task Deleted</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskData">Task Data (JSON):</label>
+                        <textarea id="taskData" rows="3" placeholder='{"taskId": "123", "title": "Test Task", "status": "todo"}'></textarea>
+                    </div>
+                    <button onclick="sendTaskUpdate()">Send Task Update</button>
+                </div>
+
+                <!-- Messaging -->
+                <div class="section">
+                    <h3>💬 Team Messages</h3>
+                    <div class="form-group">
+                        <label for="messageTeamId">Team ID:</label>
+                        <input type="text" id="messageTeamId" placeholder="Team ID for messaging">
+                    </div>
+                    <div class="form-group">
+                        <label for="messageContent">Message:</label>
+                        <input type="text" id="messageContent" placeholder="Type your message here">
+                    </div>
+                    <button onclick="sendMessage()">Send Message</button>
+                    <button onclick="startTyping()" class="secondary">Start Typing</button>
+                    <button onclick="stopTyping()" class="secondary">Stop Typing</button>
+                </div>
+
+                <!-- User Status -->
+                <div class="section">
+                    <h3>👤 User Status</h3>
+                    <div class="form-group">
+                        <label for="userStatus">Status:</label>
+                        <select id="userStatus">
+                            <option value="online">Online</option>
+                            <option value="away">Away</option>
+                            <option value="busy">Busy</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                    </div>
+                    <button onclick="updateStatus()">Update Status</button>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <!-- Real-time Updates -->
+                <div class="section">
+                    <h3>📱 Real-time Updates</h3>
+                    
+                    <!-- Messages -->
+                    <div class="message-container">
+                        <h4>💬 Team Messages</h4>
+                        <div class="message-list" id="messageList">
+                            <div style="text-align: center; color: #888; padding: 20px;">
+                                No messages yet...
+                            </div>
+                        </div>
+                        <div class="typing-indicator" id="typingIndicator"></div>
+                    </div>
+
+                    <!-- Task Updates -->
+                    <div class="task-updates">
+                        <h4>📋 Task Updates</h4>
+                        <div id="taskUpdatesList">
+                            <div style="text-align: center; color: #888; padding: 15px;">
+                                No task updates yet...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Online Users -->
+                    <div class="user-list">
+                        <h4>👥 Online Users</h4>
+                        <div id="onlineUsers">
+                            <div style="text-align: center; color: #888; padding: 15px;">
+                                No users online...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Logs -->
+                <div class="section">
+                    <h3>📊 Event Logs</h3>
+                    <button onclick="clearLogs()" class="clear-logs">Clear Logs</button>
+                    <div class="logs" id="eventLogs">
+                        <div class="log-entry info">
+                            <span class="timestamp">[System]</span> Socket.IO Tester Ready
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let socket = null;
+        let isConnected = false;
+        let onlineUsers = new Set();
+        let typingUsers = new Set();
+
+        function log(message, type = 'info') {
+            const logs = document.getElementById('eventLogs');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `<span class="timestamp">[${timestamp}]</span> ${message}`;
+            logs.appendChild(logEntry);
+            logs.scrollTop = logs.scrollHeight;
+        }
+
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const status = document.getElementById('connectionStatus');
+            if (connected) {
+                status.textContent = 'Connected ✅';
+                status.className = 'status connected';
+            } else {
+                status.textContent = 'Disconnected ❌';
+                status.className = 'status disconnected';
+            }
+        }
+
+        function connectSocket() {
+            const token = document.getElementById('jwtToken').value.trim();
+            if (!token) {
+                alert('Please enter a JWT token');
+                return;
+            }
+
+            try {
+                socket = io('http://localhost:3030', {
+                    auth: {
+                        token: token
+                    }
+                });
+
+                // Connection events
+                socket.on('connect', () => {
+                    updateConnectionStatus(true);
+                    log('🔌 Connected to server', 'info');
+                });
+
+                socket.on('disconnect', () => {
+                    updateConnectionStatus(false);
+                    log('🔌 Disconnected from server', 'warning');
+                });
+
+                socket.on('connect_error', (error) => {
+                    log(`❌ Connection error: ${error.message}`, 'error');
+                });
+
+                // Welcome message
+                socket.on('connected', (data) => {
+                    log(`👋 ${data.message}`, 'event');
+                    log(`User: ${data.user.name} (${data.user.role})`, 'info');
+                });
+
+                // Project events
+                socket.on('user_joined_project', (data) => {
+                    log(`👤 ${data.user.name} joined project ${data.projectId}`, 'event');
+                    addOnlineUser(data.user);
+                });
+
+                socket.on('user_left_project', (data) => {
+                    log(`👤 ${data.user.name} left project ${data.projectId}`, 'event');
+                    removeOnlineUser(data.user.id);
+                });
+
+                // Team events
+                socket.on('user_joined_team', (data) => {
+                    log(`👤 ${data.user.name} joined team ${data.teamId}`, 'event');
+                    addOnlineUser(data.user);
+                });
+
+                socket.on('user_left_team', (data) => {
+                    log(`👤 ${data.user.name} left team ${data.teamId}`, 'event');
+                    removeOnlineUser(data.user.id);
+                });
+
+                // Task events
+                socket.on('task_created', (data) => {
+                    log(`📋 Task created in project ${data.projectId}`, 'event');
+                    addTaskUpdate('created', data);
+                });
+
+                socket.on('task_updated', (data) => {
+                    log(`📋 Task updated in project ${data.projectId}`, 'event');
+                    addTaskUpdate('updated', data);
+                });
+
+                socket.on('task_moved', (data) => {
+                    log(`📋 Task moved in project ${data.projectId}`, 'event');
+                    addTaskUpdate('moved', data);
+                });
+
+                socket.on('task_deleted', (data) => {
+                    log(`📋 Task deleted in project ${data.projectId}`, 'event');
+                    addTaskUpdate('deleted', data);
+                });
+
+                // Message events
+                socket.on('new_message', (data) => {
+                    log(`💬 New message from ${data.sender.name}`, 'event');
+                    addMessage(data);
+                });
+
+                // Typing events
+                socket.on('user_typing', (data) => {
+                    log(`⌨️ ${data.user.name} is typing...`, 'info');
+                    addTypingUser(data.user.name);
+                });
+
+                socket.on('user_stopped_typing', (data) => {
+                    log(`⌨️ ${data.user.name} stopped typing`, 'info');
+                    removeTypingUser(data.user.name);
+                });
+
+                // Status events
+                socket.on('user_status_changed', (data) => {
+                    log(`👤 ${data.user.name} is now ${data.status}`, 'event');
+                    updateUserStatus(data.user.id, data.status);
+                });
+
+                socket.on('user_offline', (data) => {
+                    log(`👤 ${data.user.name} went offline`, 'warning');
+                    removeOnlineUser(data.user.id);
+                });
+
+                // Member events
+                socket.on('member_added', (data) => {
+                    log(`👥 Member added to team ${data.teamId}`, 'event');
+                });
+
+                socket.on('member_removed', (data) => {
+                    log(`👥 Member removed from team ${data.teamId}`, 'event');
+                });
+
+                // Project/Team updates
+                socket.on('project_updated', (data) => {
+                    log(`📋 Project ${data.projectId} updated`, 'event');
+                });
+
+                socket.on('team_updated', (data) => {
+                    log(`👥 Team ${data.teamId} updated`, 'event');
+                });
+
+            } catch (error) {
+                log(`❌ Connection failed: ${error.message}`, 'error');
+            }
+        }
+
+        function disconnectSocket() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                updateConnectionStatus(false);
+                log('🔌 Manually disconnected', 'warning');
+                clearOnlineUsers();
+            }
+        }
+
+        function joinProject() {
+            const projectId = document.getElementById('projectId').value.trim();
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('join_project', projectId);
+            log(`🏠 Joining project: ${projectId}`, 'info');
+        }
+
+        function leaveProject() {
+            const projectId = document.getElementById('projectId').value.trim();
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!projectId) {
+                alert('Please enter a project ID');
+                return;
+            }
+            socket.emit('leave_project', projectId);
+            log(`🏠 Leaving project: ${projectId}`, 'info');
+        }
+
+        function joinTeam() {
+            const teamId = document.getElementById('teamId').value.trim();
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!teamId) {
+                alert('Please enter a team ID');
+                return;
+            }
+            socket.emit('join_team', teamId);
+            log(`🏠 Joining team: ${teamId}`, 'info');
+        }
+
+        function leaveTeam() {
+            const teamId = document.getElementById('teamId').value.trim();
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!teamId) {
+                alert('Please enter a team ID');
+                return;
+            }
+            socket.emit('leave_team', teamId);
+            log(`🏠 Leaving team: ${teamId}`, 'info');
+        }
+
+        function sendTaskUpdate() {
+            const projectId = document.getElementById('taskProjectId').value.trim();
+            const action = document.getElementById('taskAction').value;
+            const taskDataStr = document.getElementById('taskData').value.trim();
+
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!projectId || !taskDataStr) {
+                alert('Please fill in all task fields');
+                return;
+            }
+
+            try {
+                const taskData = JSON.parse(taskDataStr);
+                const eventName = `task_${action}`;
+                
+                socket.emit(eventName, {
+                    projectId: projectId,
+                    ...taskData
+                });
+                
+                log(`📋 Sent ${eventName} event`, 'info');
+            } catch (error) {
+                alert('Invalid JSON in task data');
+            }
+        }
+
+        function sendMessage() {
+            const teamId = document.getElementById('messageTeamId').value.trim();
+            const content = document.getElementById('messageContent').value.trim();
+
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            if (!teamId || !content) {
+                alert('Please enter team ID and message');
+                return;
+            }
+
+            socket.emit('send_message', {
+                teamId: teamId,
+                content: content
+            });
+
+            log(`💬 Sent message to team ${teamId}`, 'info');
+            document.getElementById('messageContent').value = '';
+        }
+
+        function startTyping() {
+            const teamId = document.getElementById('messageTeamId').value.trim();
+            if (!socket || !isConnected || !teamId) {
+                alert('Please connect and enter team ID first');
+                return;
+            }
+            socket.emit('typing_start', { teamId: teamId });
+            log(`⌨️ Started typing in team ${teamId}`, 'info');
+        }
+
+        function stopTyping() {
+            const teamId = document.getElementById('messageTeamId').value.trim();
+            if (!socket || !isConnected || !teamId) {
+                alert('Please connect and enter team ID first');
+                return;
+            }
+            socket.emit('typing_stop', { teamId: teamId });
+            log(`⌨️ Stopped typing in team ${teamId}`, 'info');
+        }
+
+        function updateStatus() {
+            const status = document.getElementById('userStatus').value;
+            if (!socket || !isConnected) {
+                alert('Please connect first');
+                return;
+            }
+            socket.emit('status_update', status);
+            log(`👤 Updated status to: ${status}`, 'info');
+        }
+
+        function addMessage(data) {
+            const messageList = document.getElementById('messageList');
+            if (messageList.children[0]?.textContent.includes('No messages')) {
+                messageList.innerHTML = '';
+            }
+
+            const messageItem = document.createElement('div');
+            messageItem.className = 'message-item';
+            messageItem.innerHTML = `
+                <div class="message-sender">${data.sender.name}</div>
+                <div class="message-content">${data.message?.content || data.content || 'No content'}</div>
+                <div class="message-time">${new Date(data.timestamp).toLocaleTimeString()}</div>
+            `;
+            messageList.appendChild(messageItem);
+            messageList.scrollTop = messageList.scrollHeight;
+        }
+
+        function addTaskUpdate(action, data) {
+            const taskList = document.getElementById('taskUpdatesList');
+            if (taskList.children[0]?.textContent.includes('No task updates')) {
+                taskList.innerHTML = '';
+            }
+
+            const taskItem = document.createElement('div');
+            taskItem.className = 'task-update-item';
+            const actionIcon = {
+                'created': '➕',
+                'updated': '✏️',
+                'moved': '↔️',
+                'deleted': '🗑️'
+            };
+            
+            taskItem.innerHTML = `
+                <div><strong>${actionIcon[action]} Task ${action}</strong></div>
+                <div>Project: ${data.projectId}</div>
+                <div>By: ${data.createdBy?.name || data.updatedBy?.name || data.movedBy?.name || data.deletedBy?.name || 'Unknown'}</div>
+                <div style="font-size: 10px; color: #888;">${new Date(data.timestamp).toLocaleTimeString()}</div>
+            `;
+            taskList.appendChild(taskItem);
+            
+            // Keep only last 10 updates
+            while (taskList.children.length > 10) {
+                taskList.removeChild(taskList.firstChild);
+            }
+        }
+
+        function addOnlineUser(user) {
+            onlineUsers.add(JSON.stringify(user));
+            updateOnlineUsersList();
+        }
+
+        function removeOnlineUser(userId) {
+            onlineUsers.forEach(userStr => {
+                const user = JSON.parse(userStr);
+                if (user.id === userId) {
+                    onlineUsers.delete(userStr);
+                }
+            });
+            updateOnlineUsersList();
+        }
+
+        function updateUserStatus(userId, status) {
+            // Update existing user status
+            onlineUsers.forEach(userStr => {
+                const user = JSON.parse(userStr);
+                if (user.id === userId) {
+                    onlineUsers.delete(userStr);
+                    user.status = status;
+                    onlineUsers.add(JSON.stringify(user));
+                }
+            });
+            updateOnlineUsersList();
+        }
+
+        function updateOnlineUsersList() {
+            const userList = document.getElementById('onlineUsers');
+            if (onlineUsers.size === 0) {
+                userList.innerHTML = '<div style="text-align: center; color: #888; padding: 15px;">No users online...</div>';
+                return;
+            }
+
+            userList.innerHTML = '';
+            onlineUsers.forEach(userStr => {
+                const user = JSON.parse(userStr);
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                const isOnline = !user.status || user.status === 'online';
+                userItem.innerHTML = `
+                    <div class="user-info">
+                        <div class="status-dot ${isOnline ? 'online' : 'offline'}"></div>
+                        <span>${user.name}</span>
+                    </div>
+                    <small>${user.status || 'online'}</small>
+                `;
+                userList.appendChild(userItem);
+            });
+        }
+
+        function clearOnlineUsers() {
+            onlineUsers.clear();
+            updateOnlineUsersList();
+        }
+
+        function addTypingUser(userName) {
+            typingUsers.add(userName);
+            updateTypingIndicator();
+        }
+
+        function removeTypingUser(userName) {
+            typingUsers.delete(userName);
+            updateTypingIndicator();
+        }
+
+        function updateTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (typingUsers.size === 0) {
+                indicator.textContent = '';
+                return;
+            }
+
+            const users = Array.from(typingUsers);
+            if (users.length === 1) {
+                indicator.textContent = `${users[0]} is typing...`;
+            } else if (users.length === 2) {
+                indicator.textContent = `${users[0]} and ${users[1]} are typing...`;
+            } else {
+                indicator.textContent = `${users[0]} and ${users.length - 1} others are typing...`;
+            }
+        }
+
+        function clearLogs() {
+            document.getElementById('eventLogs').innerHTML = '<div class="log-entry info"><span class="timestamp">[System]</span> Logs cleared</div>';
+        }
+
+        // Auto-connect with demo token on page load (remove in production)
+        window.addEventListener('load', () => {
+            log('🚀 Kunban Socket.IO Tester loaded successfully', 'info');
+            log('💡 Enter your JWT token and click Connect to start testing', 'info');
+        });
+    </script>
+</body>
+</html>

@@ -36,6 +36,7 @@ const jwtExpired = () =>
 const invalidCred = (res) => {
     const error = new AppError('Invalid credentials', 401);
     res.status(401).json({
+        status_code: error.statusCode,
         status: error.status,
         message: error.message,
     });
@@ -44,6 +45,7 @@ const invalidCred = (res) => {
 const roleNotAuthorized = (res) => {
     const error = new AppError('You do not have permission to perform this action', 403);
     res.status(403).json({
+        status_code: error.statusCode,
         status: error.status,
         message: error.message,
     });
@@ -52,6 +54,7 @@ const roleNotAuthorized = (res) => {
 const notFound = (res) => (whatNotFound = null) => {
     const error = new AppError(`${whatNotFound || "data"} not found!`, 404);
     res.status(404).json({
+        status_code: error.statusCode,
         status: error.status,
         message: error.message,
     });
