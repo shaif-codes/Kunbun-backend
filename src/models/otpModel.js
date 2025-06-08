@@ -31,7 +31,6 @@ const otpSchema = new mongoose.Schema({
         type: Date,
         required: true,
         default: () => new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
-        index: { expireAfterSeconds: 0 } // MongoDB TTL index for automatic deletion
     },
     createdAt: {
         type: Date,
