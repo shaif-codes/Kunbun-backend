@@ -174,7 +174,7 @@ export const sendOTPEmail = async (req, res) => {
         }
 
         // Calculate expiry minutes for email template
-        // const expiryMinutes = Math.ceil((otpResult.expiresAt - new Date()) / (1000 * 60));
+        const expiryMinutes = Math.ceil((otpResult.expiresAt - new Date()) / (1000 * 60));
 
         // Send OTP email
         const emailResult = await emailService.sendOTP(email, name, otpResult.otp, expiryMinutes);
