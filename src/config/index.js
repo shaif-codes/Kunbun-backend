@@ -5,10 +5,18 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET,
   mongoUri: process.env.MONGODB_URI,
   port: process.env.PORT || 5000,
+  email: {
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT || 587,
+    secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
+    user: process.env.EMAIL_USER,
+    password: process.env.EMAIL_PASSWORD,
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+  },
 };
 export const roleEnums = {
-  USER: "ADMIN",
-  ADMIN: "MANAGER",
+  ADMIN: "ADMIN",
+  MANAGER: "MANAGER", 
   MEMBER: "MEMBER",
 };
 

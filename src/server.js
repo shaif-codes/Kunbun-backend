@@ -6,25 +6,31 @@ import mongoose from 'mongoose';
 import { Server } from 'socket.io';
 import router from './routes/index.js';
 import { config } from './config/index.js';
+import { handleSocket } from './sockets/index.js';
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*' } });
+const io = new Server(server, { 
+    cors: { 
+        origin: process.env.CLIENT_URL || '*',
+        methods: ['GET', 'POST'],
+        credentials: true
+    } 
+});
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
 
-// TODO: Import routes and socket handlers
-// import apiRoutes from './routes/index.js';
-// app.use('/api', apiRoutes);
-// import sockets from './sockets/index.js';
-// sockets(io);
-
-
 // Routes
 app.use('/api', router);
+
+// Socket.IO handlers
+handleSocket(io);
+
+// Make io instance available to controllers
+app.set('io', io);
 
 // MongoDB Connection
 mongoose.connect(config.mongoUri)

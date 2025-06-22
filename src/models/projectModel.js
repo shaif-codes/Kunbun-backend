@@ -12,8 +12,7 @@ const taskSchema = new Schema({
         type: String
     },
     order: {
-        type: Number,
-        default: 0
+        type: Number
     }
 }, {
     timestamps: true
@@ -21,9 +20,7 @@ const taskSchema = new Schema({
 
 const projectStatusSectionSchema = new Schema({
     status: {
-        type: String,
-        enum: ['todo', 'in-progress', 'done'],
-        default: 'todo'
+        type: String
     },
     tasks: {
         type: [taskSchema],
@@ -42,7 +39,7 @@ const projectSchema = new Schema({
     },
     members: {
         type: [Types.ObjectId],
-        ref: 'Team',
+        ref: 'User',
         required: true
     },
     statusSection: {

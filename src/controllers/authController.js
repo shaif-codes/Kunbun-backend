@@ -1,8 +1,9 @@
 // auth with firebase
 import { userModel } from "../models/index.js";
-import { successResponse } from "../utils/response.js";
-import { notFound } from "../utils/error.js";
+import { successResponse, errorResponse } from "../utils/response.js";
+import { notFound, invalidCred } from "../utils/error.js";
 import { firebaseService } from "../services/firebaseService.js";
+import emailService from "../services/emailService.js";
 import jwt from "jsonwebtoken";
 
 export const authController = {
@@ -21,7 +22,7 @@ export const authController = {
       const user = await userModel.create({
         firebaseUid: firebaseUser.uid,
         email: firebaseUser.email,
-        name: name,
+        name: name
       });
 
       return successResponse(res, user, "User created successfully");
@@ -64,10 +65,7 @@ export const authController = {
       return successResponse(res, { token }, "User logged in successfully");
     } catch (error) {
       console.error("Error logging in Firebase user:", error);
-      return res.status(401).json({
-        message: "Invalid credentials",
-        error: error.message,
-      });
+      return invalidCred(res);
     }
   },
   firebaseResetPassword: async (req, res) => {
@@ -94,10 +92,47 @@ export const authController = {
       return successResponse(res, null, "Password reset email sent successfully");
     } catch (error) {
       console.error("Error sending password reset email:", error);
-      return res.status(500).json({
-        message: "Failed to send password reset email",
-        error: error.message,
+      return errorResponse(res, error, "Failed to send password reset email");
+    }
+  },
+  unverifiedSiginUp: async (req, res) => {
+    const { email, name } = req.body;
+    try {
+      // Check if user already exists
+      const existingUser = await userModel.findOne({ email: email.toLowerCase() });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "User with this email already exists",
+        });
+      }
+
+      // Create new user without password
+      const user = await userModel.create({
+        email: email.toLowerCase(),
+        name,
+        isVerified: false, // Set isVerified to false
       });
+
+      // Send account review email to user
+      try {
+        await emailService.sendAccountReviewEmail(email, name);
+        console.log(`Account review email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send account review email:', emailError);
+        // Don't fail the registration if email fails
+      }
+
+      return successResponse(res, {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isVerified: user.isVerified
+        }
+      }, "Registration received successfully. You will be notified once your account is reviewed and approved.");
+    } catch (error) {
+      console.error("Error creating unverified user:", error);
+      return errorResponse(res, error, "Failed to create unverified user");
     }
   }
 };
