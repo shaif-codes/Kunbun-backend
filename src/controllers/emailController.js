@@ -174,7 +174,7 @@ export const sendOTPEmail = async (req, res) => {
         }
 
         // Calculate expiry minutes for email template
-        const expiryMinutes = Math.ceil((otpResult.expiresAt - new Date()) / (1000 * 60));
+        // const expiryMinutes = Math.ceil((otpResult.expiresAt - new Date()) / (1000 * 60));
 
         // Send OTP email
         const emailResult = await emailService.sendOTP(email, name, otpResult.otp, expiryMinutes);
@@ -182,9 +182,9 @@ export const sendOTPEmail = async (req, res) => {
         if (emailResult.success) {
             return successResponse(res, {
                 message: 'OTP sent successfully',
-                otpId: otpResult.otpId,
-                expiresAt: otpResult.expiresAt,
-                expiryMinutes
+                // otpId: otpResult.otpId,
+                // expiresAt: otpResult.expiresAt,
+                // expiryMinutes
             }, 'OTP verification email sent successfully');
         } else {
             return errorResponse(res, emailResult.error, 'Failed to send OTP email', 500);
@@ -198,7 +198,7 @@ export const sendOTPEmail = async (req, res) => {
 // Verify OTP
 export const verifyOTP = async (req, res) => {
     try {
-        const { email, otp, purpose = 'email_verification' } = req.body;
+        const { name, email, otp, purpose = 'email_verification' } = req.body;
 
         if (!email || !otp) {
             return errorResponse(res, null, 'Please provide email and otp fields', 400);
@@ -213,10 +213,17 @@ export const verifyOTP = async (req, res) => {
         const verificationResult = await otpModel.verifyOTP(email, otp, purpose);
 
         if (verificationResult.success) {
+            // trigger email that your email is verified and your account will be reviewed soon
+            const result = await emailService.sendAccountReviewEmail(email, name);
+            if (!result.success) {
+                console.error('Failed to send account review email:', result.error);
+                // Log the error but do not fail the OTP verification
+            }
+
             return successResponse(res, {
                 message: verificationResult.message,
-                otpId: verificationResult.otpId,
-                verifiedAt: new Date()
+                // otpId: verificationResult.otpId,
+                // verifiedAt: new Date()
             }, 'OTP verified successfully');
         } else {
             // Record failed attempt if OTP exists but is invalid

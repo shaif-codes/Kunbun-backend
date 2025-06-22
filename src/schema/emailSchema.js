@@ -154,6 +154,7 @@ export const sendOTPEmailSchema = Joi.object({
 
 // Verify OTP schema
 export const verifyOTPSchema = Joi.object({
+    name: Joi.string().min(1).max(100).required(),
     email: Joi.string().email().required().messages({
         'string.email': 'Please provide a valid email address',
         'any.required': 'Email address is required'
