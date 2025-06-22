@@ -84,8 +84,7 @@ router.post('/notification',
 );
 
 // Send OTP verification email (Available to all authenticated users)
-router.post('/send-otp', 
-    authenticate, 
+router.post('/send-otp',  
     validator({ body: sendOTPEmailSchema }), 
     sendOTPEmail
 );
