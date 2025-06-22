@@ -90,8 +90,7 @@ router.post('/send-otp',
 );
 
 // Verify OTP (Available to all authenticated users)
-router.post('/verify-otp', 
-    authenticate, 
+router.post('/verify-otp',
     validator({ body: verifyOTPSchema }), 
     verifyOTP
 );
