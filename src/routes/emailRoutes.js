@@ -8,7 +8,8 @@ import {
     sendTaskAssignmentEmail,
     sendNotificationEmail,
     sendOTPEmail,
-    verifyOTP
+    verifyOTP,
+    sendAccountReviewEmail
 } from '../controllers/emailController.js';
 import { authenticate, authorizeRole } from '../middlewares/auth.js';
 import { validator } from '../middlewares/validator.js';
@@ -20,7 +21,8 @@ import {
     taskAssignmentEmailSchema,
     notificationEmailSchema,
     sendOTPEmailSchema,
-    verifyOTPSchema
+    verifyOTPSchema,
+    accountReviewEmailSchema
 } from '../schema/emailSchema.js';
 import { roleEnums } from '../config/index.js';
 
@@ -93,6 +95,14 @@ router.post('/verify-otp',
     authenticate, 
     validator({ body: verifyOTPSchema }), 
     verifyOTP
+);
+
+// Send account review email (Admin and Manager)
+router.post('/account-review', 
+    authenticate, 
+    authorizeRole(roleEnums.ADMIN, roleEnums.MANAGER), 
+    validator({ body: accountReviewEmailSchema }), 
+    sendAccountReviewEmail
 );
 
 export default router;

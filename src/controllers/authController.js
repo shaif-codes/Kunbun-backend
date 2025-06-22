@@ -3,6 +3,7 @@ import { userModel } from "../models/index.js";
 import { successResponse, errorResponse } from "../utils/response.js";
 import { notFound, invalidCred } from "../utils/error.js";
 import { firebaseService } from "../services/firebaseService.js";
+import emailService from "../services/emailService.js";
 import jwt from "jsonwebtoken";
 
 export const authController = {
@@ -92,6 +93,46 @@ export const authController = {
     } catch (error) {
       console.error("Error sending password reset email:", error);
       return errorResponse(res, error, "Failed to send password reset email");
+    }
+  },
+  unverifiedSiginUp: async (req, res) => {
+    const { email, name } = req.body;
+    try {
+      // Check if user already exists
+      const existingUser = await userModel.findOne({ email: email.toLowerCase() });
+      if (existingUser) {
+        return res.status(400).json({
+          message: "User with this email already exists",
+        });
+      }
+
+      // Create new user without password
+      const user = await userModel.create({
+        email: email.toLowerCase(),
+        name,
+        isVerified: false, // Set isVerified to false
+      });
+
+      // Send account review email to user
+      try {
+        await emailService.sendAccountReviewEmail(email, name);
+        console.log(`Account review email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send account review email:', emailError);
+        // Don't fail the registration if email fails
+      }
+
+      return successResponse(res, {
+        user: {
+          id: user._id,
+          email: user.email,
+          name: user.name,
+          isVerified: user.isVerified
+        }
+      }, "Registration received successfully. You will be notified once your account is reviewed and approved.");
+    } catch (error) {
+      console.error("Error creating unverified user:", error);
+      return errorResponse(res, error, "Failed to create unverified user");
     }
   }
 };

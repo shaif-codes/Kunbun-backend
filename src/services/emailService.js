@@ -7,7 +7,8 @@ import {
     taskAssignmentTemplate,
     passwordResetTemplate,
     notificationTemplate,
-    otpVerificationTemplate
+    otpVerificationTemplate,
+    accountReviewTemplate
 } from '../templates/index.js';
 
 class EmailService {
@@ -87,8 +88,8 @@ class EmailService {
     }
 
     // Send welcome email to new users
-    async sendWelcomeEmail(userEmail, userName) {
-        const { subject, text, html } = welcomeEmailTemplate(userName);
+    async sendWelcomeEmail(userEmail, userName, newPassword) {
+        const { subject, text, html } = welcomeEmailTemplate(userName, newPassword);
         return await this.sendEmail(userEmail, subject, text, html);
     }
 
@@ -124,6 +125,12 @@ class EmailService {
     // Send OTP verification email
     async sendOTP(userEmail, userName, otp, expiryMinutes = 10) {
         const { subject, text, html } = otpVerificationTemplate(userName, otp, expiryMinutes);
+        return await this.sendEmail(userEmail, subject, text, html);
+    }
+
+    // Send account review email
+    async sendAccountReviewEmail(userEmail, userName) {
+        const { subject, text, html } = accountReviewTemplate(userName, userEmail);
         return await this.sendEmail(userEmail, subject, text, html);
     }
 

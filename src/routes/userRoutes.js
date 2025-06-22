@@ -14,7 +14,17 @@ router.get('/me',
 
 router.get("/", authenticate, authorizeRole(roleEnums.ADMIN), userController.getAllUsers);
 
+router.get("/unverified", authenticate, authorizeRole(roleEnums.ADMIN), userController.listUnvierifiedUsers);
+
 router.get("/:id", authenticate, authorizeRole(roleEnums.ADMIN), validator({ params: userSchema.getUserById }),  userController.getUserById);
+
+
+router.post("/verify-users",
+  authenticate,
+  authorizeRole(roleEnums.ADMIN),
+  validator({ body: userSchema.verifyBulkUsers }),
+  userController.verifyBulkUsers
+);
 
 router.put(
   "/:id",

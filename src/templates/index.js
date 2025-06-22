@@ -5,3 +5,4 @@ export { taskAssignmentTemplate } from './taskAssignmentTemplate.js';
 export { passwordResetTemplate } from './passwordResetTemplate.js';
 export { notificationTemplate } from './notificationTemplate.js';
 export { otpVerificationTemplate } from './otpVerificationTemplate.js';
+export { accountReviewTemplate } from './accountReviewTemplate.js';

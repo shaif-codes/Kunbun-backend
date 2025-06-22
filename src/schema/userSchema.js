@@ -12,6 +12,9 @@ export const userSchema = {
     email: Joi.string().email().required(),
     password: Joi.string().required(),
   }),
+  verifyBulkUsers: Joi.object({
+    userIds: Joi.array().items(Joi.string().required()).required(),
+  }),
   deleteUser: Joi.object({
     id: Joi.string().required()
   }),

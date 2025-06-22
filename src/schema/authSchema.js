@@ -2,22 +2,13 @@ import Joi from "joi";
 import { roleEnums } from "../config/index.js";
 
 export const authSchema = {
-  signup: Joi.object({
+  verifyUser: Joi.object({
     email: Joi.string()
       .email()
       .required()
       .messages({
         'string.email': 'Please provide a valid email address',
         'any.required': 'Email is required'
-      }),
-    password: Joi.string()
-      .min(6)
-      .max(128)
-      .required()
-      .messages({
-        'string.min': 'Password must be at least 6 characters long',
-        'string.max': 'Password cannot exceed 128 characters',
-        'any.required': 'Password is required'
       }),
     name: Joi.string()
       .min(2)
@@ -65,6 +56,25 @@ export const authSchema = {
       .messages({
         'string.email': 'Please provide a valid email address',
         'any.required': 'Email is required'
+      })
+  }),
+  unverifiedSignup: Joi.object({
+    email: Joi.string()
+      .email()
+      .required()
+      .messages({
+        'string.email': 'Please provide a valid email address',
+        'any.required': 'Email is required'
+      }),
+    name: Joi.string()
+      .min(2)
+      .max(50)
+      .required()
+      .trim()
+      .messages({
+        'string.min': 'Name must be at least 2 characters long',
+        'string.max': 'Name cannot exceed 50 characters',
+        'any.required': 'Name is required'
       })
   })
 };

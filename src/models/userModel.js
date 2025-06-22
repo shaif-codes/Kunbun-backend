@@ -7,7 +7,6 @@ const userSchema = new Schema(
   {
     firebaseUid: { 
         type: String, 
-        required: true, 
         unique: true 
     },
     email: {
@@ -35,9 +34,29 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    emailVerifiedAt: {
+      type: Date,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
+    hooks: {
+      // Pre-save hook to set emailVerifiedAt when emailVerified is true
+      pre: function (next) {
+        if (this.isModified("emailVerified") && this.emailVerified === true) {
+          this.emailVerifiedAt = new Date();
+        }
+        next();
+      },
+    },
   }
 );
 

@@ -28,6 +28,11 @@ export const welcomeEmailSchema = Joi.object({
         'string.min': 'Name must be at least 1 character long',
         'string.max': 'Name cannot exceed 100 characters',
         'any.required': 'Name is required'
+    }),
+    newPassword: Joi.string().min(6).max(50).required().messages({
+        'string.min': 'Password must be at least 6 characters long',
+        'string.max': 'Password cannot exceed 50 characters',
+        'any.required': 'New password is required'
     })
 });
 
@@ -160,5 +165,18 @@ export const verifyOTPSchema = Joi.object({
     }),
     purpose: Joi.string().valid('email_verification', 'password_reset', 'two_factor', 'login').optional().default('email_verification').messages({
         'any.only': 'Purpose must be one of: email_verification, password_reset, two_factor, login'
+    })
+});
+
+// Account review email schema
+export const accountReviewEmailSchema = Joi.object({
+    email: Joi.string().email().required().messages({
+        'string.email': 'Please provide a valid email address',
+        'any.required': 'Email address is required'
+    }),
+    name: Joi.string().min(1).max(100).required().messages({
+        'string.min': 'Name must be at least 1 character long',
+        'string.max': 'Name cannot exceed 100 characters',
+        'any.required': 'Name is required'
     })
 });

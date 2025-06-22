@@ -46,13 +46,13 @@ export const sendTestEmail = async (req, res) => {
 // Send welcome email
 export const sendWelcomeEmail = async (req, res) => {
     try {
-        const { email, name } = req.body;
+        const { email, name, newPassword } = req.body;
 
-        if (!email || !name) {
-            return errorResponse(res, null, 'Please provide email and name fields', 400);
+        if (!email || !name || !newPassword) {
+            return errorResponse(res, null, 'Please provide email, name, and newPassword fields', 400);
         }
 
-        const result = await emailService.sendWelcomeEmail(email, name);
+        const result = await emailService.sendWelcomeEmail(email, name, newPassword);
 
         if (result.success) {
             return successResponse(res, result, 'Welcome email sent successfully');
@@ -229,5 +229,27 @@ export const verifyOTP = async (req, res) => {
     } catch (error) {
         console.error('Verify OTP error:', error);
         return errorResponse(res, error, 'Error verifying OTP', 500);
+    }
+};
+
+// Send account review email
+export const sendAccountReviewEmail = async (req, res) => {
+    try {
+        const { email, name } = req.body;
+
+        if (!email || !name) {
+            return errorResponse(res, null, 'Please provide email and name fields', 400);
+        }
+
+        const result = await emailService.sendAccountReviewEmail(email, name);
+
+        if (result.success) {
+            return successResponse(res, result, 'Account review email sent successfully');
+        } else {
+            return errorResponse(res, result.error, 'Failed to send account review email', 500);
+        }
+    } catch (error) {
+        console.error('Send account review email error:', error);
+        return errorResponse(res, error, 'Error sending account review email', 500);
     }
 };
